@@ -1,0 +1,425 @@
+openapi: 3.0.0
+info:
+  title: RoboCharge Web App
+  description: API per un sistema di prenotazione e gestione parcheggi con funzionalità di autenticazione e pagamento
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Main Web App Server
+
+tags:
+  - name: Autenticazione
+    description: Operazioni di login, registrazione e gestione utenti
+  - name: Prenotazioni
+    description: Gestione delle prenotazioni di parcheggio
+  - name: Pagamenti
+    description: Operazioni di pagamento
+  - name: Parcheggio
+    description: Funzionalità relative ai parcheggi
+  - name: Amministrazione
+    description: Funzionalità riservate agli amministratori
+
+paths:
+  /login:
+    get:
+      summary: Pagina di login
+      tags:
+        - Autenticazione
+      responses:
+        '200':
+          description: Pagina di login visualizzata
+    post:
+      summary: Autenticazione utente
+      tags:
+        - Autenticazione
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '302':
+          description: Reindirizzamento dopo login riuscito
+        '400':
+          description: Credenziali non valide
+
+  /login-with-google:
+    get:
+      summary: Avvia autenticazione con Google
+      tags:
+        - Autenticazione
+      responses:
+        '302':
+          description: Reindirizzamento al servizio di autenticazione Google
+
+  /register:
+    get:
+      summary: Pagina di registrazione
+      tags:
+        - Autenticazione
+      responses:
+        '200':
+          description: Pagina di registrazione visualizzata
+    post:
+      summary: Registrazione nuovo utente
+      tags:
+        - Autenticazione
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '302':
+          description: Registrazione riuscita, reindirizzamento
+        '400':
+          description: Errore nella registrazione
+
+  /prenota:
+    get:
+      summary: Pagina di prenotazione parcheggio
+      tags:
+        - Prenotazioni
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Pagina di prenotazione visualizzata
+        '403':
+          description: Utente non autorizzato
+
+  /parcheggia:
+    get:
+      summary: Pagina di parcheggio e successivo pagamento
+      tags:
+        - Prenotazioni
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Pagina di prenotazione visualizzata
+        '403':
+          description: Utente non autorizzato
+
+  /park-now/check-reservation:
+    get:
+      summary: Verifica prenotazione per targa
+      tags:
+        - Prenotazioni
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: licensePlate
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dettagli prenotazione
+        '400':
+          description: Parametri mancanti
+
+  /park-now:
+    post:
+      summary: Effettua prenotazione e pagamento
+      tags:
+        - Prenotazioni
+        - Pagamenti
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parkReserved:
+                  type: string
+                licensePlate:
+                  type: string
+                totalCost:
+                  type: number
+      responses:
+        '302':
+          description: Reindirizzamento al pagamento
+        '403':
+          description: Utente non autorizzato
+
+  /new-reservation:
+    post:
+      summary: Effettua prenotazione
+      tags:
+        - Prenotazioni
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parkReserved:
+                  type: string
+                licensePlate:
+                  type: string
+                totalCost:
+                  type: number
+      responses:
+        '302':
+          description: Prenotazione effettuata
+        '403':
+          description: Utente non autorizzato
+
+  /premium:
+    get:
+      summary: Pagina upgrade premium
+      tags:
+        - Autenticazione
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Pagina upgrade premium visualizzata
+    post:
+      summary: Avvia processo di upgrade premium
+      tags:
+        - Pagamenti
+      security:
+        - sessionAuth: []
+      responses:
+        '302':
+          description: Reindirizzamento al pagamento
+
+  /available-spots:
+    get:
+      summary: Visualizza posti disponibili
+      tags:
+        - Parcheggio
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: Lista dei posti disponibili
+        '403':
+          description: Utente non autorizzato
+
+  /delete-prenotazione/{reservationId}:
+    delete:
+      summary: Annulla prenotazione
+      tags:
+        - Prenotazioni
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: reservationId
+          in: path
+          required: true
+          description: ID della prenotazione da annullare
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cancellazione della prenotazione avvenuta con successo
+          content:
+            application/json:
+              example:
+                message: "Cancellazione della prenotazione avvenuta con successo"
+        '403':
+          description: Utente non autorizzato
+          content:
+            application/json:
+              example:
+                message: "Utente non autorizzato"
+        '500':
+          description: Errore interno del server
+          content:
+            application/json:
+              example:
+                message: "Errore del server"
+        '404':
+          description: Prenotazione non trovata
+          content:
+            application/json:
+              example:
+                message: "Prenotazione non trovata per l'utente"
+
+  /robot-status:
+    get:
+      summary: Stato del robot di ricarica
+      tags:
+        - Amministrazione
+      security:
+        - adminAuth: []
+      responses:
+        '200':
+          description: Stato corrente del robot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingStatus'
+
+  /robot/{action}:
+    put:
+      summary: Controlla le azioni del robot
+      description: Avvia o ferma il processo di ricarica del robot
+      tags:
+        - Amministrazione
+      security:
+        - AdminAuth: []
+      parameters:
+        - name: action
+          in: path
+          required: true
+          description: Azione da eseguire sul robot (start o stop)
+          schema:
+            type: string
+            enum: [start, stop]
+      responses:
+        '200':
+          description: Operazione completata con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingStatus'
+                message:
+                  type: string
+                  example: "Operazione completata con successo"
+        '500':
+          description: Errore interno del server
+          content:
+            application/json:
+              example:
+                message: "Errore del server"
+
+  /modificaPrezzi:
+    get:
+      summary: Visualizza prezzi correnti
+      tags:
+        - Amministrazione
+      security:
+        - adminAuth: []
+      responses:
+        '200':
+          description: Pagina prezzi visualizzata
+    put:
+      summary: Aggiorna prezzi parcheggio
+      tags:
+        - Amministrazione
+      security:
+        - adminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prezzoOra:
+                  type: number
+                prezzoRicarica:
+                  type: number
+      responses:
+        '200':
+          description: Prezzi aggiornati con successo
+          content:
+            application/json:
+              example:
+                message: "Prezzi aggiornati con successo"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore del server"
+  
+  /update-admin/{userId}:
+    put:
+      summary: Aggiorna Utente a Admin
+      description: Aggiorna il ruolo dell'utente a admin
+      tags:
+        - Amministrazione
+      security:
+        - adminAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+          description: Identificatore univoco dell'utente
+      responses:
+        '200':
+          description: Aggiornamento a admin eseguito con successo
+          content:
+            application/json:
+              example:
+                message: "Utente aggiornato ad admin con successo"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore del server"
+
+components:
+  schemas:
+    ChargingStatus:
+      type: object
+      description: Stato attuale del sistema di ricarica
+      properties:
+        currentCharging:
+          type: array
+          items:
+            type: object
+            properties:
+              reservationId:
+                type: integer
+                example: 4
+              targetBattery:
+                type: number
+                minimum: 0
+                maximum: 100
+                example: 65.5
+        isActive:
+          type: boolean
+          description: Se il robot è attivo in questo momento
+          example: true
+        queueLength:
+          type: integer
+          description: Numero di richieste di ricarica in coda
+          example: 3
+        robotStatus:
+          type: string
+          enum: ["idle", "charging", "moving"]
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Autenticazione basata su sessione
+    adminAuth:
+      type: apiKey
+      in: cookie
+      name: session
+      description: Autenticazione admin richiesta
+
+security:
+  - sessionAuth: []

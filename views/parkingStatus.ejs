@@ -1,0 +1,21 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Stato del Parcheggio</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Numero slot</th>
+                <th>Status</th>
+                <th>Posto di ricarica?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% parkings.forEach(function(parking) { %>
+                <tr>
+                    <td><%= parking.idPosto %></td>
+                    <td><%= parking.isOccupato === 1 ? "Occupato" : "Libero" %></td>
+                    <td><%= parking.isOnCharge === 1 ? "Sì" : "No" %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>

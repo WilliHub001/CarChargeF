@@ -1,0 +1,59 @@
+<div class="container mt-4">
+        <h2 class="mb-4">Lista Utenti</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Ruolo</th>
+                    <th>Azione</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% users.forEach(function(userV) { %>
+                    <tr>
+                        <td><%= userV.nome %></td>
+                        <td><%= userV.email %></td>
+                        <td><%= userV.ruoloUtente %></td>
+                        <% if (userV.ruoloUtente != 'admin') { %>
+                            <td><button 
+                                class="btn bg-danger rounded-md shadow-sm text-white text-sm upgrade-btn" 
+                                data-userid="<%= userV.id %>">
+                                Upgrade a Admin
+                            </button></td>
+                        <% } else { %>
+                            <td></td>
+                        <% } %>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+</div>
+
+<script>
+    document.querySelectorAll('.upgrade-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-userid');
+            
+            fetch(`/update-admin/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Errore durante l\'upgrade');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => {
+                alert('Errore: ' + error.message);
+            });
+        });
+    });
+</script>

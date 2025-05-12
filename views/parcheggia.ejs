@@ -1,0 +1,383 @@
+<div class="row justify-content-center">
+    <div class="col-md-8 text-start">
+        <div class="card shadow-lg">
+            <% if(!checkPenale) { %>
+                <div class="card-header text-center">
+                    <h2>Parcheggia ora</h2>
+                </div>
+                <div class="card-body">
+                    <form id="parkNowForm" action="/park-now" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Hai già prenotato un posto?</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="parkReserved" id="parkingNow"
+                                    value="park" checked>
+                                <label class="form-check-label" for="parkingNow">
+                                    No, Devo Parcheggiare Ora
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="parkReserved" id="reservedParking"
+                                    value="reserved">
+                                <label class="form-check-label" for="reservedParking">
+                                    Sì, Ho Già Prenotato
+                                </label>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="mb-3">
+                            <label for="licensePlate" class="form-label">Targa del veicolo</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="licensePlate" name="licensePlate"
+                                    placeholder="AB123CD" required>
+                                <button type="button" class="btn btn-outline-secondary d-none"
+                                    id="checkReservation">Verifica</button>
+                            </div>
+                            <div id="reservationStatus" class="mt-2 d-none"></div>
+                        </div>
+
+                        <div id="reservationDetails" class="mb-3 d-none">
+                            <div class="alert alert-success">
+                                <h5>Prenotazione trovata:</h5>
+                                <div id="reservationInfo"></div>
+                                <input type="hidden" id="idPrenotazione" name="idPrenotazione">
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="sceltaTipo">
+                            <label class="form-label">Tipo di parcheggio</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="parkingType" id="parkingOnly"
+                                    value="parking" checked>
+                                <label class="form-check-label" for="parkingOnly">
+                                    Solo parcheggio
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="parkingType" id="parkingAndCharging"
+                                    value="charging">
+                                <label class="form-check-label" for="parkingAndCharging">
+                                    Parcheggio con ricarica
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="chargingOptions" class="mb-3 d-none">
+                            <label for="targetBattery" class="form-label">Percentuale di ricarica desiderata</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="targetBattery" name="targetBattery"
+                                    min="1" max="100" placeholder="80" value="">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="inputDurata">
+                            <label for="duration" class="form-label">Durata stimata (ore)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" min="1" max="24"
+                                value="2" required>
+                        </div>
+
+                        <div class="mb-3" id="riepilogoCosti">
+                            <h4>Riepilogo costi</h4>
+                            <div class="d-flex justify-content-between">
+                                <span>Tariffa oraria:</span>
+                                <span>€<span id="hourlyRate"></span></span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Durata:</span>
+                                <span><span id="durationSummary">2</span> ore</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Supplemento ricarica:</span>
+                                <span>€<span id="chargingSupplement">0.00</span></span>
+                                <input type="hidden" id="chargingSupplementInput" name="chargingSupplementInput" value="0">
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between fw-bold">
+                                <span>Totale:</span>
+                                <span>€<span id="totalCost"></span></span>
+                                <input type="hidden" id="totalCostInput" name="totalCost" value="">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="submitPagamento">Procedi al pagamento</button>
+                    </form>
+                </div>
+                <% } else { %>
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0 text-center">Pagamento Penali</h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Selettore prenotazioni -->
+                        <div class="form-group mb-4">
+                            <label for="prenotazioneSelect">Seleziona una prenotazione da pagare:</label>
+                            <select class="form-control" id="prenotazioneSelect">
+                                <option value="">Seleziona...</option>
+                                <% prenotazioni.forEach(function(prenotazione, index) { %>
+                                    <option value="<%= index %>">
+                                        <%= prenotazione.idTarga %> - <%= new
+                                                Date(prenotazione.startTime).toLocaleString() %>
+                                    </option>
+                                    <% }); %>
+                            </select>
+                        </div>
+                        <form id="penalePay" action="/paga-penale" method="POST">
+                            <!-- Card dettaglio prenotazione -->
+                            <div id="dettaglioPrenotazione" style="display: none;">
+                                <div class="card mb-4" id="statoCard">
+                                    <div class="card-body text-center">
+                                        <div class="mb-3">
+                                            <h4>Targa Veicolo</h4>
+                                            <p class="lead font-weight-bold" id="targaVeicolo"></p>
+                                        </div>
+                                        <input type="hidden" id="idPrenotazione" name="idPrenotazione">
+                                        <div class="mb-3">
+                                            <h4>Penale da pagare</h4>
+                                            <span>€<p class="display-1 font-weight-bold" id="costoPenale"></p></span>
+                                            <input type="hidden" id="costoPenaleV" name="costoPenaleV">
+                                        </div>
+                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <h5>Inizio Prenotazione</h5>
+                                                <p id="dataInizio"></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h5>Fine Prenotazione</h5>
+                                                <p id="dataFine"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn d-none mt-3 p-2 rounded" id="submitPagamento">Procedi al pagamento</button>
+                            </div>
+                        </form>
+                    </div>
+                    <% } %>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const parkingTypeRadios = document.querySelectorAll('input[name="parkingType"]');
+        const parkReservedRadios = document.querySelectorAll('input[name="parkReserved"]');
+        const chargingOptions = document.getElementById('chargingOptions');
+        const durationInput = document.getElementById('duration');
+        const durationSummary = document.getElementById('durationSummary');
+        const hourlyRateSpan = document.getElementById('hourlyRate');
+        const chargingSupplementSpan = document.getElementById('chargingSupplement');
+        const totalCostSpan = document.getElementById('totalCost');
+        const totalCostInput = document.getElementById('totalCostInput');
+        const form = document.getElementById("parkNowForm");
+        const reservedOption = document.getElementById("reservedParking");
+        const parkNowOption = document.getElementById("parkingNow");
+        const licensePlateInput = document.getElementById('licensePlate');
+        const checkReservationBtn = document.getElementById('checkReservation');
+        const reservationStatus = document.getElementById('reservationStatus');
+        const reservationDetails = document.getElementById('reservationDetails');
+        const reservationInfo = document.getElementById('reservationInfo');
+        const reservationIdInput = document.getElementById('idPrenotazione');
+        const chargingSupplementInput = document.getElementById('chargingSupplementInput');
+
+        const divRiepilogoCosti = document.getElementById('riepilogoCosti');
+        const submitPagamento = document.getElementById('submitPagamento');
+        const divInputDurata = document.getElementById('inputDurata');
+        const divSceltaTipo = document.getElementById('sceltaTipo');
+
+        function updateCost() {
+            const isParkingOnly = document.getElementById('parkingOnly').checked;
+            const duration = parseInt(durationInput.value) || 0;
+
+            const hourlyRate = parseFloat(hourlyRateSpan.textContent);
+            const chargingSupplement = isParkingOnly ? 0 : parseFloat(chargingSupplementInput.value);
+
+            const totalCost = (hourlyRate * duration) + chargingSupplement;
+
+            hourlyRateSpan.textContent = hourlyRate.toFixed(2);
+            durationSummary.textContent = duration;
+            chargingSupplementSpan.textContent = chargingSupplement.toFixed(2);
+            totalCostSpan.textContent = totalCost.toFixed(2);
+            totalCostInput.value = totalCost.toFixed(2);
+        }
+
+        durationInput.addEventListener('input', updateCost);
+
+        initPrezzi();
+
+        async function initPrezzi(){
+            try{
+                const response = await fetch(`/get-prezzi`);
+                const data = await response.json();
+
+                if (data) {
+                    const hourlyRateSpan = document.getElementById('hourlyRate');
+                    const totalCostSpan = document.getElementById('totalCost');
+                    const totalCostInput = document.getElementById('totalCostInput');
+                    const chargingSupplementInput = document.getElementById('chargingSupplementInput');
+                    
+                    hourlyRateSpan.textContent = data.costoOra.toFixed(2);
+                    totalCostSpan.textContent = (data.costoOra * 2).toFixed(2);
+                    totalCostInput.value = (data.costoOra * 2).toFixed(2);
+                    chargingSupplementInput.value = data.costoRicarica.toFixed(2);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        checkReservationBtn.addEventListener('click', async function () {
+            const licensePlate = licensePlateInput.value.trim();
+
+            if (!licensePlate) {
+                showReservationStatus('error', 'Inserisci una targa valida');
+                return;
+            }
+
+            try {
+                showReservationStatus('info', 'Ricerca in corso...');
+
+                const response = await fetch(`/park-now/check-reservation?licensePlate=${encodeURIComponent(licensePlate)}`);
+                const data = await response.json();
+
+                if (response.ok && data.reservation) {
+                    // Prenotazione trovata
+                    reservationDetails.classList.remove('d-none');
+                    reservationIdInput.value = data.reservation.idPrenotazione;
+                    totalCostInput.value = data.reservation.costo.toFixed(2);
+
+                    // Compila i dettagli della prenotazione
+                    const reservationDate = new Date(data.reservation.startTime);
+                    const formattedDate = `${reservationDate.toLocaleDateString()} ${reservationDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                    const duration = Math.floor((new Date(data.reservation.endTime) - new Date(data.reservation.startTime)) / (1000 * 60 * 60));
+
+                    // Aggiorna le informazioni della prenotazione
+                    reservationInfo.innerHTML = `
+                        <p><strong>Data:</strong> ${formattedDate}</p>
+                        <p><strong>Durata:</strong> ${duration} ore</p>
+                        <p><strong>Tipo:</strong> ${data.reservation.chargeRequest == 1 ? 'Parcheggio con ricarica' : 'Solo parcheggio'}</p>
+                    `;
+
+                    // Imposta i valori nel form in base alla prenotazione
+                    reservedOption.checked = true;
+
+                    // Aggiorna lo stato dell'interfaccia utente
+                    updateInterfaceForReserved(true);
+
+                    // Mostra un messaggio di successo
+                    showReservationStatus('success', 'Prenotazione trovata! Puoi procedere al pagamento.');
+                } else {
+                    // Nessuna prenotazione trovata
+                    reservationDetails.classList.add('d-none');
+                    parkNowOption.checked = true;
+                    updateInterfaceForReserved(false);
+                    showReservationStatus('warning', 'Nessuna prenotazione trovata per questa targa. Puoi procedere con una nuova prenotazione.');
+                }
+            } catch (error) {
+                console.error('Error checking reservation:', error);
+                showReservationStatus('error', 'Errore durante la verifica della prenotazione');
+            }
+        });
+
+        function showReservationStatus(type, message) {
+            reservationStatus.classList.remove('d-none', 'alert-info', 'alert-success', 'alert-warning', 'alert-danger');
+
+            switch (type) {
+                case 'info':
+                    reservationStatus.classList.add('alert', 'alert-info');
+                    break;
+                case 'success':
+                    reservationStatus.classList.add('alert', 'alert-success');
+                    break;
+                case 'warning':
+                    reservationStatus.classList.add('alert', 'alert-warning');
+                    break;
+                case 'error':
+                    reservationStatus.classList.add('alert', 'alert-danger');
+                    break;
+            }
+
+            reservationStatus.textContent = message;
+        }
+
+        function updateInterfaceForReserved(isReserved) {
+            if (isReserved) {
+                divSceltaTipo.classList.add('d-none');
+                divInputDurata.classList.add('d-none');
+                divRiepilogoCosti.classList.add('d-none');
+                checkReservationBtn.classList.remove('d-none');
+            } else {
+                divSceltaTipo.classList.remove('d-none');
+                divInputDurata.classList.remove('d-none');
+                divRiepilogoCosti.classList.remove('d-none');
+                submitPagamento.classList.remove('d-none');
+                checkReservationBtn.classList.add('d-none');
+            }
+        }
+
+        parkReservedRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                updateInterfaceForReserved(this.value === 'reserved');
+            });
+        });
+
+        parkingTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'charging') {
+                    chargingOptions.classList.remove('d-none');
+                } else {
+                    chargingOptions.classList.add('d-none');
+                }
+                updateCost();
+            });
+        });
+
+        reservedOption.addEventListener("change", updateFormAction);
+        parkNowOption.addEventListener("change", updateFormAction);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Collega l'event listener al select
+        const select = document.getElementById('prenotazioneSelect');
+        select.addEventListener('change', mostraDettagli);
+    });
+
+    function mostraDettagli() {
+        if(!JSON.parse('<%- JSON.stringify(prenotazioni) %>')) return;
+        const select = document.getElementById('prenotazioneSelect');
+        const dettaglioDiv = document.getElementById('dettaglioPrenotazione');
+        const submitPagamento = document.getElementById('submitPagamento');
+
+        if (select.value === "") {
+            dettaglioDiv.style.display = 'none';
+            return;
+        }
+
+        const prenotazioniData = JSON.parse('<%- JSON.stringify(prenotazioni) %>');
+        const prenotazioneIndex = parseInt(select.value);
+        const prenotazione = prenotazioniData[prenotazioneIndex];
+
+        // Popola i dati della prenotazione
+        document.getElementById('idPrenotazione').value = prenotazione.idPrenotazione;
+        document.getElementById('targaVeicolo').textContent = prenotazione.idTarga;
+        document.getElementById('costoPenale').textContent = (prenotazione.costo / 2).toFixed(2);
+        document.getElementById('costoPenaleV').value = (prenotazione.costo / 2).toFixed(2);
+        document.getElementById('dataInizio').textContent = new Date(prenotazione.startTime).toLocaleString();
+        document.getElementById('dataFine').textContent = new Date(prenotazione.endTime).toLocaleString();
+
+        // Determina lo stato della prenotazione
+        const dataInizio = new Date(prenotazione.startTime);
+        const dataFine = new Date(prenotazione.endTime);
+
+        const statoCard = document.getElementById('statoCard');
+        const statoBox = document.getElementById('submitPagamento');
+        statoCard.style.backgroundColor = '#ffebeb'; // Rosso chiaro
+        statoBox.className = 'btn mt-3 p-2 rounded bg-danger text-white';
+
+        // Mostra la card
+        dettaglioDiv.style.display = 'block';
+        submitPagamento.classList.remove('d-none');
+    }
+</script>

@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  title: API Servizio di Ricarica
+  description: Servizio per la gestione delle operazioni di ricarica dei veicoli elettrici
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3003
+    description: Servizio di ricarica tramite robot
+
+components:
+  schemas:
+    ChargingStatus:
+      type: object
+      description: Stato attuale del sistema di ricarica
+      properties:
+        currentCharging:
+          type: array
+          items:
+            type: object
+            properties:
+              reservationId:
+                type: integer
+                example: 4
+              targetBattery:
+                type: number
+                minimum: 0
+                maximum: 100
+                example: 65.5
+        isActive:
+          type: boolean
+          description: Se il robot è attivo in questo momento
+          example: true
+        queueLength:
+          type: integer
+          description: Numero di richieste di ricarica in coda
+          example: 3
+        robotStatus:
+          type: string
+          enum: ["idle", "charging", "moving"]
+
+    OperationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Messaggio descrittivo sul risultato dell'operazione
+          example: "Robot di ricarica avviato"
+
+paths:
+  /status:
+    get:
+      summary: Ottieni lo Stato del Sistema di Ricarica
+      description: Recupera lo stato attuale del servizio di ricarica
+      responses:
+        '200':
+          description: Recupero dello stato della ricarica avvenuto con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChargingStatus'
+
+  /start:
+    put:
+      summary: Avvia il Robot di Ricarica
+      description: Attiva il robot di ricarica (viene comunque avviato in automatico)
+      responses:
+        '200':
+          description: Robot di ricarica avviato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+
+  /stop:
+    put:
+      summary: Ferma il Robot di Ricarica
+      description: Arresta il robot di ricarica
+      responses:
+        '200':
+          description: Robot di ricarica fermato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationResponse'
+
+  # Topic MQTT (a scopo di documentazione)
+  x-mqtt-topics:
+    robocharge/charging/new-request:
+      description: Topic per l'invio di una nuova richiesta di ricarica
+      payload:
+        type: object
+        properties:
+          reservationId:
+            type: string
+            description: Identificativo univoco della prenotazione
+          ChargingData:
+            type: object
+            properties:
+              TargetBattery:
+                type: number
+                description: Livello della batteria desiderato
+
+    robocharge/charging/cancel:
+      description: Argomento per annullare una richiesta di ricarica
+      payload:
+        type: object
+        properties:
+          reservationId:
+            type: string
+            description: Identificativo univoco della prenotazione di ricarica da annullare

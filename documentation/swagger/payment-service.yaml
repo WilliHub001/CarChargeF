@@ -1,0 +1,243 @@
+openapi: 3.0.3
+info:
+  title: API Servizio di Pagamento PayPal
+  description: Servizio per gestire i pagamenti PayPal per prenotazioni, penali e abbonamenti premium
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3004
+    description: Servizio di pagamento
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateOrderRequest:
+      type: object
+      required:
+        - amount
+        - payType
+        - idPrenotazione
+      properties:
+        amount:
+          type: number
+          description: Importo del pagamento in EUR
+          example: 10.00
+        payType:
+          type: integer
+          description: Tipo di pagamento (0 = Premium, 1 = Prenotazione, 2 = Penale)
+          enum: [0, 1, 2]
+        idPrenotazione:
+          type: integer
+          description: ID della prenotazione (obbligatorio per pagamenti di prenotazioni e penali)
+          example: 12
+
+    CreateOrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: string
+          description: ID ordine PayPal
+          example: "1VT34567HC123456"
+        approveUrl:
+          type: string
+          description: URL per completare il pagamento PayPal
+          example: "https://www.paypal.com/checkoutnow?token=1VT34567HC123456"
+
+    PaymentCaptureResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indica se il pagamento è stato completato con successo
+        message:
+          type: string
+          description: Messaggio descrittivo sul risultato del pagamento
+        paymentId:
+          type: integer
+          description: Identificativo univoco del pagamento completato
+          example: 12
+
+paths:
+  /create-order:
+    post:
+      summary: Crea un ordine PayPal
+      description: Genera un ordine PayPal per il pagamento di una prenotazione, penale o abbonamento premium
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '200':
+          description: Ordine creato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+        '401':
+          description: Non autorizzato (token mancante o non valido)
+          content:
+            application/json:
+              example:
+                message: "Token mancante, autorizzazione negata"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore nella creazione dell'ordine PayPal"
+
+  /premium/capture:
+    get:
+      summary: Conferma il pagamento di un abbonamento premium
+      description: Completa un pagamento PayPal per un abbonamento premium
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+          description: ID ordine PayPal
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: ID utente che effettua il pagamento
+      responses:
+        '201':
+          description: Pagamento premium completato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentCaptureResponse'
+        '400':
+          description: Pagamento fallito
+          content:
+            application/json:
+              example:
+                message: "Pagamento fallito"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore durante la cattura del pagamento PayPal"
+
+  /reservation/capture:
+    get:
+      summary: Conferma il pagamento di una prenotazione
+      description: Completa un pagamento PayPal per una prenotazione di parcheggio
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+          description: ID ordine PayPal
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: integer
+          description: ID utente che effettua il pagamento
+        - in: query
+          name: idPrenotazione
+          required: true
+          schema:
+            type: integer
+          description: ID della prenotazione
+      responses:
+        '201':
+          description: Pagamento della prenotazione completato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentCaptureResponse'
+        '400':
+          description: Pagamento fallito
+          content:
+            application/json:
+              example:
+                message: "Pagamento fallito"
+        '404':
+          description: Prenotazione non trovata
+          content:
+            application/json:
+              example:
+                message: "Prenotazione non trovata"
+        '403':
+          description: Non autorizzato a pagare questa prenotazione
+          content:
+            application/json:
+              example:
+                message: "Non sei autorizzato a pagare questa prenotazione"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore durante la cattura del pagamento PayPal"
+
+  /paga-penale/capture:
+    get:
+      summary: Conferma il pagamento di una penale
+      description: Completa un pagamento PayPal per una penale di prenotazione
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema:
+            type: string
+          description: ID ordine PayPal
+        - in: query
+          name: userId
+          required: true
+          schema:
+            type: integer
+          description: ID utente che effettua il pagamento
+        - in: query
+          name: idPrenotazione
+          required: true
+          schema:
+            type: integer
+          description: ID della prenotazione
+      responses:
+        '201':
+          description: Pagamento della penale completato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentCaptureResponse'
+        '400':
+          description: Pagamento fallito
+          content:
+            application/json:
+              example:
+                message: "Pagamento fallito"
+        '404':
+          description: Prenotazione non trovata
+          content:
+            application/json:
+              example:
+                message: "Prenotazione non trovata"
+        '403':
+          description: Non autorizzato a pagare questa penale
+          content:
+            application/json:
+              example:
+                message: "Non sei autorizzato a pagare questa penale"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore durante la cattura del pagamento PayPal"

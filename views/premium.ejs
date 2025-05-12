@@ -1,0 +1,64 @@
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2>Servizio Premium</h2>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h3>Diventa un utente Premium</h3>
+                    <p class="lead">Ottieni accesso a funzionalità esclusive per un'esperienza di parcheggio senza stress.</p>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header text-center">
+                                <h4>Standard</h4>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Parcheggio al momento</li>
+                                    <li class="list-group-item">Ricarica al momento</li>
+                                    <li class="list-group-item text-muted"><del>Prenotazione anticipata</del></li>
+                                    <li class="list-group-item text-muted"><del>Priorità nella coda di ricarica</del></li>
+                                    <li class="list-group-item text-muted"><del>Statistiche dettagliate</del></li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-center">
+                                <p class="text-muted">Il tuo piano attuale</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card h-100 border-primary">
+                            <div class="card-header text-center bg-primary text-white">
+                                <h4>Premium</h4>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">Parcheggio al momento</li>
+                                    <li class="list-group-item">Ricarica al momento</li>
+                                    <li class="list-group-item"><strong>Prenotazione anticipata</strong></li>
+                                    <li class="list-group-item"><strong>Priorità nella coda di ricarica</strong></li>
+                                    <li class="list-group-item"><strong>Statistiche dettagliate</strong></li>
+                                </ul>
+                            </div>
+                            <div class="card-footer text-center">
+                                <p class="fw-bold">€10 - pagamento unico</p>
+                                <form action="/premium" method="POST">
+                                    <% if (checkP) { %>
+                                        <button type="submit" class="btn btn-primary" disabled>Diventa Premium</button>
+                                    <% } else { %>
+                                        <button type="submit" class="btn btn-primary">Diventa Premium</button>
+                                    <% } %>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

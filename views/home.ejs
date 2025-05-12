@@ -1,0 +1,62 @@
+<div class="jumbotron text-center">
+    <h1>Benvenuto su EV Park & Charge</h1>
+    <p class="lead">La soluzione completa per il parcheggio e la ricarica della tua auto elettrica</p>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-4 d-flex">
+            <div class="card shadow-lg h-100 d-flex flex-column">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Prenota</h5>
+                    <p class="card-text flex-grow-1">Prenota un posto dove parcheggiare la tua auto, in modo semplice e veloce.</p>
+                    <a href="/prenota" class="btn btn-primary mt-auto">Inizia ora</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 d-flex">
+            <div class="card shadow-lg h-100 d-flex flex-column">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Parcheggia & Ricarica</h5>
+                    <p class="card-text flex-grow-1">Ricarica la tua auto mentre è parcheggiata con il nostro sistema automatizzato.</p>
+                    <a href="/parcheggia" class="btn btn-primary mt-auto">Ricarica ora</a>
+                </div>
+            </div>
+        </div>
+
+        <% if (user && user.ruoloUtente=='admin' ) { %>
+        <div class="col-md-4 d-flex">
+            <div class="card shadow-lg h-100 d-flex flex-column">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Modifica i prezzi</h5>
+                    <p class="card-text flex-grow-1">Modifica il costo €/ora della sosta e €/Kw della ricarica</p>
+                    <a href="/modificaPrezzi" class="btn btn-primary mt-auto">Modifica ora</a>
+                </div>
+            </div>
+        </div>
+        <% } %>
+        
+        <% if (user && user.ruoloUtente=='admin' ) { %>
+            <div class="col-md-4 d-flex py-3">
+                <div class="card shadow-lg h-100 d-flex flex-column">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Controlla Status Robot</h5>
+                        <p class="card-text flex-grow-1">Controlla lo status del robot, con la possibilità di avviarlo o fermarlo a piacimento</p>
+                        <a href="/robot-status" class="btn btn-primary mt-auto">Controlla</a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+        
+        <% if (!user || user.ruoloUtente=='base' ) { %>
+            <div class="col-md-4 d-flex">
+                <div class="card shadow-lg h-100 d-flex flex-column">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">Diventa Premium</h5>
+                        <p class="card-text flex-grow-1">Abbonati al servizio premium per prenotare i posti in anticipo e molto altro!</p>
+                        <a href="/premium" class="btn btn-warning mt-auto">Scopri Premium</a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>

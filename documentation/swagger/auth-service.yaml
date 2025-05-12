@@ -1,0 +1,242 @@
+openapi: 3.0.3
+info:
+  title: API Servizio di Autenticazione
+  description: Servizio di autenticazione con supporto per accesso locale e OAuth2 Google
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3001
+    description: Servizio di autenticazione
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserRegistration:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          example: "Mario Rossi"
+        email:
+          type: string
+          format: email
+          example: "mario.rossi@example.com"
+        password:
+          type: string
+          format: password
+          example: "SecurePassword123!"
+
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "mario.rossi@example.com"
+        password:
+          type: string
+          format: password
+          example: "SecurePassword123!"
+
+    UserResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token di autenticazione JWT
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 56
+            nome:
+              type: string
+              example: "Mario Rossi"
+            email:
+              type: string
+              format: email
+              example: "mario.rossi@example.com"
+            ruoloUtente:
+              type: string
+              description: Ruolo utente
+              example: "standard"
+
+paths:
+  /register:
+    post:
+      summary: Registrazione Utente
+      description: Registra un nuovo utente con email e password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: Utente registrato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Errore di registrazione (ad esempio, utente già esistente)
+          content:
+            application/json:
+              examples:
+                userExists:
+                  value:
+                    message: "Utente già registrato"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                error: "Errore durante la registrazione"
+
+  /login:
+    post:
+      summary: Accesso Utente
+      description: Autenticazione utente con email e password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Accesso effettuato con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Credenziali non valide
+          content:
+            application/json:
+              examples:
+                invalidCredentials:
+                  value:
+                    message: "Credenziali non valide"
+                googleAccount:
+                  value:
+                    message: "Questo account utilizza l'autenticazione Google. Usare \"Login con Google\"."
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore del server"
+
+  /verify:
+    get:
+      summary: Verifica Token di Autenticazione
+      description: Convalida e recupera le informazioni utente dal JWT
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: x-auth-token
+          required: true
+          schema:
+            type: string
+          description: Token di autenticazione JWT
+      responses:
+        '200':
+          description: Token valido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserResponse/properties/user'
+        '401':
+          description: Token mancante o non valido
+          content:
+            application/json:
+              examples:
+                missingToken:
+                  value:
+                    message: "Token mancante, autorizzazione negata"
+                invalidToken:
+                  value:
+                    message: "Token non valido"
+        '404':
+          description: Utente non trovato
+          content:
+            application/json:
+              example:
+                message: "Utente non trovato"
+
+  /auth/google:
+    get:
+      summary: Avvia Autenticazione Google OAuth2
+      description: Reindirizza gli utenti alla pagina di autenticazione Google
+      responses:
+        '302':
+          description: Reindirizzamento alla pagina di autenticazione Google
+
+  /auth/google/callback:
+    get:
+      summary: Callback OAuth2 Google
+      description: Gestisce il callback dall'autenticazione Google
+      responses:
+        '302':
+          description: Reindirizzamento al frontend con token JWT
+          headers:
+            Location:
+              schema:
+                type: string
+                example: "http://localhost:8080/auth-success?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: Autenticazione fallita
+          content:
+            application/json:
+              example:
+                message: "Autenticazione con Google fallita"
+
+  /premium/{userId}:
+    put:
+      summary: Aggiorna Utente a Premium
+      description: Aggiorna il ruolo dell'utente a premium
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+          description: Identificatore univoco dell'utente
+      responses:
+        '200':
+          description: Aggiornamento a premium eseguito con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: Utente non trovato
+          content:
+            application/json:
+              example:
+                message: "Utente non trovato"
+        '500':
+          description: Errore del server
+          content:
+            application/json:
+              example:
+                message: "Errore del server"

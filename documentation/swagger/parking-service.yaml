@@ -1,0 +1,242 @@
+openapi: 3.0.0
+info:
+  title: API Servizio Parcheggio
+  version: 1.0.0
+  description: Microservizio per la gestione delle prenotazioni e dei posti auto
+
+servers:
+  - url: http://localhost:3002
+    description: Servizio di Parcheggio
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Reservation:
+      type: object
+      properties:
+        idPrenotazione:
+          type: integer
+        idUtente:
+          type: integer
+        idPosto:
+          type: integer
+        idTarga:
+          type: string
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        chargeRequest:
+          type: integer
+          enum: [0, 1]
+        targetBattery:
+          type: number
+        completata:
+          type: integer
+          enum: [0, 1]
+        totalCost:
+          type: number
+
+    ParkingSpot:
+      type: object
+      properties:
+        idPosto:
+          type: integer
+        isOnCharge:
+          type: boolean
+        isOccupato:
+          type: boolean
+
+paths:
+  /spots:
+    post:
+      summary: Ottieni i posti auto disponibili
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: ['charging', 'normal', 'all']
+      responses:
+        '200':
+          description: Elenco dei posti disponibili
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/ParkingSpot'
+                  - type: object
+                    properties:
+                      spotsRic:
+                        type: integer
+                      spotsNoRic:
+                        type: integer
+
+  /new-reservation:
+    post:
+      summary: Crea una nuova prenotazione per il parcheggio
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                licensePlate:
+                  type: string
+                startDate:
+                  type: string
+                  format: date-time
+                duration:
+                  type: number
+                parkingType:
+                  type: string
+                  enum: ['charging', 'normal']
+                targetBattery:
+                  type: number
+                totalCost:
+                  type: number
+                userId:
+                  type: integer
+      responses:
+        '201':
+          description: Prenotazione creata con successo
+        '400':
+          description: Conflitto nella prenotazione o dati non validi
+        '500':
+          description: Errore del server o nessun posto disponibile
+
+  /check-reservation:
+    get:
+      summary: Verifica la prenotazione per una targa specifica
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: licensePlate
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Prenotazione trovata
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  reservation:
+                    $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Targa mancante
+        '500':
+          description: Errore del server
+
+  /park-now:
+    post:
+      summary: Parcheggia un veicolo immediatamente
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reservationId:
+                  type: integer
+      responses:
+        '200':
+          description: Accesso al parcheggio confermato
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  reservation:
+                    $ref: '#/components/schemas/Reservation'
+                  spot:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type: string
+                        enum: ['charging', 'normal']
+        '400':
+          description: Prenotazione già utilizzata o nessun posto disponibile
+        '404':
+          description: Prenotazione non trovata
+        '500':
+          description: Errore del server
+
+  /prezzi:
+    get:
+      summary: Ottieni i prezzi attuali
+      responses:
+        '200':
+          description: Lista dei prezzi attuali
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  costoOra:
+                    type: number
+                  costoRicarica:
+                    type: number
+        '500':
+          description: Errore del server
+
+  /update-prezzi:
+    put:
+      summary: Aggiorna i prezzi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prezzoOra:
+                  type: number
+                prezzoRicarica:
+                  type: number
+      responses:
+        '200':
+          description: Prezzi aggiornati con successo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  costoOra:
+                    type: number
+                  costoRicarica:
+                    type: number
+                  message:
+                    type: string
+        '500':
+          description: Errore del server durante l'aggiornamento dei prezzi
+
+security:
+  - bearerAuth: []

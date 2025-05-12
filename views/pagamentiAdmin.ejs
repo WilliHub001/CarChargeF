@@ -1,0 +1,64 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Pagamenti effettuati su RoboCharge</h2>
+    
+    <label for="dateFilter">Filtra per data:</label>
+    <input type="date" id="dateFilter" class="form-control mb-3">
+    
+    <label for="userTypeFilter">Filtra per tipo di utente:</label>
+    <select id="userTypeFilter" class="form-control mb-3">
+        <option value="">Tutti</option>
+        <option value="base">Base</option>
+        <option value="premium">Premium</option>
+        <option value="admin">Admin</option>
+    </select>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID Payment</th>
+                <th>Email Utente</th>
+                <th>Data</th>
+                <th>Prezzo</th>
+                <th>Tipo di pagamento</th>
+                <th>Tipo di utente</th>
+            </tr>
+        </thead>
+        <tbody id="paymentsTable">
+            <% payments.forEach(function(payment) { %>
+                <tr data-date="<%= new Date(payment.data).toISOString().split('T')[0] %>" data-user-type="<%= payment.ruoloUtente %>">
+                    <td><%= payment.idPayment %></td>
+                    <td><%= payment.email %></td>
+                    <td><%= new Date(payment.data).toLocaleDateString('it-IT') %></td>
+                    <td><%= payment.prezzo %> €</td>
+                    <td><%= payment.paymentType %></td>
+                    <td><%= payment.ruoloUtente %></td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function filterPayments() {
+        const selectedDate = document.getElementById('dateFilter').value;
+        const selectedUserType = document.getElementById('userTypeFilter').value.toLowerCase();
+        const rows = document.querySelectorAll('#paymentsTable tr');
+        
+        rows.forEach(row => {
+            const rowDate = row.getAttribute('data-date');
+            const rowUserType = row.getAttribute('data-user-type');
+            
+            const dateMatch = !selectedDate || rowDate === selectedDate;
+            const userTypeMatch = !selectedUserType || rowUserType === selectedUserType;
+            
+            if (dateMatch && userTypeMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+    
+    document.getElementById('dateFilter').addEventListener('input', filterPayments);
+    document.getElementById('userTypeFilter').addEventListener('change', filterPayments);
+</script>

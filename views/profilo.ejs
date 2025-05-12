@@ -1,0 +1,65 @@
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>Profilo Utente</h2>
+            </div>
+            <div class="card-body">
+                <% if (typeof message !== 'undefined') { %>
+                    <div class="alert alert-success">
+                        <%= message %>
+                    </div>
+                <% } %>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3 fw-bold">Nome:</div>
+                    <div class="col-md-9"><%= user.nome %></div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3 fw-bold">Email:</div>
+                    <div class="col-md-9"><%= user.email %></div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3>Pagamenti Effettuati</h3>
+            </div>
+            <div class="card-body">
+                <% if (payments) { %>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrizione</th>
+                                    <th>Prezzo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% payments.forEach(payment => { %>
+                                    <tr>
+                                        <td><%= new Date(payment.data).toLocaleDateString('it-IT') %></td>
+                                        <td><%= payment.paymentType %></td>
+                                        <td>€ <%= payment.prezzo.toFixed(2) %></td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-info">
+                        Non hai ancora effettuato nessun pagamento.
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="/home" class="btn btn-secondary">Torna alla Home</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="container">
+    <h1 class="text-center mb-4">Disponibilità Parcheggi</h1>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card <%= spotsNoCharge === 0 ? 'bg-danger text-white' : 'bg-light' %> shadow-lg">
+                <div class="card-body text-center">
+                    <h2 class="card-title">Parcheggi Standard</h2>
+                    <div class="display-3 <%= spotsNoCharge === 0 ? 'text-white' : 'text-primary' %>">
+                        <%= spotsNoCharge %>
+                    </div>
+                    <p class="card-text <%= spotsNoCharge === 0 ? 'text-light' : 'text-muted' %>">
+                        Posti disponibili senza ricarica
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card <%= spotsWithCharge === 0 ? 'bg-danger text-white' : 'bg-light' %> shadow-lg">
+                <div class="card-body text-center">
+                    <h2 class="card-title">Parcheggi con Ricarica</h2>
+                    <div class="display-3 <%= spotsWithCharge === 0 ? 'text-white' : 'text-success' %>">
+                        <%= spotsWithCharge %>
+                    </div>
+                    <p class="card-text <%= spotsWithCharge === 0 ? 'text-light' : 'text-muted' %>">
+                        Posti disponibili con stazione di ricarica
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <% if (spotsNoCharge === 0 && spotsWithCharge === 0) { %>
+            <div class="alert alert-danger" role="alert">
+                Spiacenti, tutti i parcheggi sono attualmente occupati
+            </div>
+        <% } %>
+    </div>
+</div>

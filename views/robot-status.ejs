@@ -1,0 +1,117 @@
+<div class="card-header">
+    <h2 class="text-center mb-4">Robot di Ricarica</h2>
+</div>
+<div class="robot-status-container mb-4">
+    <div class="d-flex justify-content-center align-items-center">
+        <div class="robot-icon me-3">
+            <i class="fas fa-robot fa-3x"></i>
+        </div>
+        <div class="robot-details">
+            <h4 class="mb-2">Status:
+                <span id="robot-status-text" class="
+                    <% if (status.robotStatus === 'moving') { %>
+                    text-danger
+                    <% } else if (status.robotStatus === 'idle') { %>
+                    text-success
+                    <% } else { %>
+                    text-warning
+                    <% } %>">
+                    <%= status.robotStatus==='idle' ? 'Fermo' : (status.robotStatus==='charging' ? 'In Carica' : 'In Movimento' ) %>
+                </span>
+            </h4>
+            <p class="text-muted" id="robot-queue-text">
+                Numero di Auto in Coda: <div id="queueLength"><%= status.queueLength %></div>
+            </p>
+            <p class="text-muted" id="robot-queue-text">
+                Posto al momento in carica: <div id="currentCharging"><%= status.currentCharging ? status.currentCharging.spotId : 'Nessuno' %></div>
+            </p>
+        </div>
+    </div>
+</div>
+<div class="robot-control-buttons d-flex justify-content-center gap-3">
+    <button id="start-robot-btn" class="btn btn-outline-success px-4 py-2">
+        <i class="fas fa-play me-2"></i>Avvia Robot
+    </button>
+    <button id="stop-robot-btn" class="btn btn-outline-danger px-4 py-2">
+        <i class="fas fa-stop me-2"></i>Ferma Robot
+    </button>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const startBtn = document.getElementById('start-robot-btn');
+        const stopBtn = document.getElementById('stop-robot-btn');
+        const statusText = document.getElementById('robot-status-text');
+        const queueLength = document.getElementById('queueLength');
+        const currentCharging = document.getElementById('currentCharging');
+
+        startBtn.addEventListener('click', async function () {
+            // Logica per avviare il robot
+            await fetch('/robot/start', { method: 'PUT' })
+                .then(response => response.json())
+                .then(data => {
+                    updateRobotStatus(data.status);
+                })
+                .catch(error => {
+                    console.error('Errore nell\'avvio del robot: ', error);
+                    alert('Errore nell\'avvio del robot. Riprova più tardi.');
+                });
+        });
+
+        stopBtn.addEventListener('click', async function () {
+            // Logica per fermare il robot
+            await fetch('/robot/stop', { method: 'PUT' })
+                .then(response => response.json())
+                .then(data => {
+                    updateRobotStatus(data.status);
+                })
+                .catch(error => {
+                    console.error('Errore nell\'arresto del robot:', error);
+                    alert(error.message || 'Errore nell\'arresto del robot. Riprova più tardi.');
+                });
+        });
+
+        async function updateRobotStatus(status) {
+
+            switch (status.robotStatus) {
+                case 'idle':
+                    statusText.textContent = 'Fermo';
+                    statusText.className = 'text-success';
+                    startBtn.disabled = false;
+                    stopBtn.disabled = true;
+                    if(status.queueLength == 0)
+                        startBtn.disabled = true;
+                    break;
+                case 'charging':
+                    statusText.textContent = 'In Carica';
+                    statusText.className = 'text-warning';
+                    startBtn.disabled = true;
+                    stopBtn.disabled = false;
+                    break;
+                default:
+                    statusText.textContent = 'In Movimento';
+                    statusText.className = 'text-danger';
+                    startBtn.disabled = true;
+                    stopBtn.disabled = true;
+            }
+            queueLength.textContent = status.queueLength;
+            currentCharging.textContent = status.currentCharging ? status.currentCharging.spotId : 'Nessuno';
+        }
+
+        async function fetchRobotStatus() {
+            try {
+                const response = await fetch('/get-robot-status'); // Sostituisci con il tuo endpoint API
+                const status = await response.json();
+                updateRobotStatus(status);
+            } catch (error) {
+                console.error('Errore nel recupero dello stato del robot:', error);
+            }
+        }
+
+        // Aggiorna lo stato ogni 5 secondi
+        setInterval(fetchRobotStatus, 5000);
+
+        // Chiamata iniziale per aggiornare subito senza aspettare un minuto
+        fetchRobotStatus();
+
+    });
+</script>

@@ -1,0 +1,140 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Dettagli Prenotazione</h3>
+          </div>
+          <div class="card-body">
+            <!-- Selettore prenotazioni -->
+            <div class="form-group mb-4">
+              <label for="prenotazioneSelect">Seleziona una prenotazione:</label>
+              <select class="form-control" id="prenotazioneSelect">
+                <option value="">Seleziona...</option>
+                <% prenotazioni.forEach(function(prenotazione, index) { %>
+                  <option value="<%= index %>"><%= prenotazione.idTarga %> - <%= new Date(prenotazione.startTime).toLocaleString() %></option>
+                <% }); %>
+              </select>
+            </div>
+  
+            <!-- Card dettaglio prenotazione -->
+            <div id="dettaglioPrenotazione" style="display: none;">
+              <div class="card mb-4" id="statoCard">
+                <div class="card-body text-center">
+                  <div class="mb-3">
+                    <h4>Targa Veicolo</h4>
+                    <p class="lead font-weight-bold" id="targaVeicolo"></p>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <h4>Numero Posto</h4>
+                    <p class="display-1 font-weight-bold" id="numeroPosto"></p>
+                  </div>
+
+                  <div class="mb-3">
+                    <h4>Stato Ricarica</h4>
+                    <p class="lead font-weight-bold" id="ricaricaStato"></p>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <h5>Inizio Prenotazione</h5>
+                      <p id="dataInizio"></p>
+                    </div>
+                    <div class="col-md-6">
+                      <h5>Fine Prenotazione</h5>
+                      <p id="dataFine"></p>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3 p-2 rounded" id="statoPrenotazione">
+                    <h4 id="statoText"></h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Dati delle prenotazioni
+    const prenotazioniData = JSON.parse('<%- JSON.stringify(prenotazioni) %>');
+    
+    // Aggiungi event listener quando il documento è pronto
+    document.addEventListener('DOMContentLoaded', function() {
+      // Collega l'event listener al select
+      const select = document.getElementById('prenotazioneSelect');
+      select.addEventListener('change', mostraDettagli);
+      setInterval(updateDettagli, 10000);
+    });
+    
+    function mostraDettagli() {
+      const select = document.getElementById('prenotazioneSelect');
+      const dettaglioDiv = document.getElementById('dettaglioPrenotazione');
+      
+      if (select.value === "") {
+        dettaglioDiv.style.display = 'none';
+        return;
+      }
+      
+      const prenotazioneIndex = parseInt(select.value);
+      const prenotazione = prenotazioniData[prenotazioneIndex];
+      
+      // Popola i dati della prenotazione
+      document.getElementById('targaVeicolo').textContent = prenotazione.idTarga;
+      document.getElementById('numeroPosto').textContent = prenotazione.idPosto;
+      document.getElementById('dataInizio').textContent = new Date(prenotazione.startTime).toLocaleString();
+      document.getElementById('dataFine').textContent = new Date(prenotazione.endTime).toLocaleString();
+      
+      if(prenotazione.targetBattery){
+        if(prenotazione.chargeRequest == 1){
+          document.getElementById('ricaricaStato').textContent = 'Ricarica in coda';
+        }else{
+          document.getElementById('ricaricaStato').textContent = 'Completata alla percentuale ' + prenotazione.targetBattery + '%';
+        }
+      }
+      else{
+        document.getElementById('ricaricaStato').textContent = 'Non Richiesta';
+      }
+
+
+      // Determina lo stato della prenotazione
+      const now = new Date();
+      const dataInizio = new Date(prenotazione.startTime);
+      const dataFine = new Date(prenotazione.endTime);
+      
+      const statoCard = document.getElementById('statoCard');
+      const statoText = document.getElementById('statoText');
+      const statoBox = document.getElementById('statoPrenotazione');
+      
+      if (now < dataInizio) {
+        // In attesa
+        statoCard.style.backgroundColor = '#e6f7ff'; // Blu chiaro
+        statoBox.className = 'mt-3 p-2 rounded bg-info text-white';
+        statoText.textContent = 'In Attesa dell\'Orario di Inizio';
+      } else if (now >= dataInizio && now <= dataFine) {
+        // In corso
+        statoCard.style.backgroundColor = '#e6ffee'; // Verde chiaro
+        statoBox.className = 'mt-3 p-2 rounded bg-success text-white';
+        statoText.textContent = 'Prenotazione in Corso';
+      } else {
+        // Completata
+        statoCard.style.backgroundColor = '#ffebeb'; // Rosso chiaro
+        statoBox.className = 'mt-3 p-2 rounded bg-danger text-white';
+        statoText.textContent = 'Prenotazione Completata';
+      }
+      
+      // Mostra la card
+      dettaglioDiv.style.display = 'block';
+    }
+
+    function updateDettagli(){
+      const select = document.getElementById('prenotazioneSelect');
+      if(select.value !== ""){
+        mostraDettagli();
+      }
+    }
+  </script>
