@@ -97,16 +97,16 @@ At this point, it is necessary to stop and restart the service to apply the new 
  - In order to make the project work, the .env file needs to be added with your personal keys and secrets to access the various APIs. Place it in the root directory.
    
   ```
-    SESSION_SECRET='' -- add here your personal session secret
-    JWT_SECRET='' -- add here your JWT token secret
-    GOOGLE_CLIENT_ID='' -- add here your Google Cloud Console Client ID (https://console.cloud.google.com/auth/overview)
-    GOOGLE_CLIENT_SECRET='' -- add here your Google Cloud Client Secret
-    CALLBACK_URL='http://localhost:3001/auth/google/callback' -- this is the callback URL after the google authentication
-    PAYPAL_CLIENT_ID='' -- add here your Paypal Client ID (https://developer.paypal.com/dashboard/)
-    PAYPAL_CLIENT_SECRET='' ## add here your Paypal Client Secret
-    PAYPAL_BASE_URL='https://api-m.sandbox.paypal.com' -- !!make sure there's no / at the end of the link!!
-    MQTT_BROKER='mqtt://localhost:1883' -- if you use a different port, change it
-    MQTT_SOCKET_BROKER='ws://localhost:9001' -- if you use a different port, change it
+    SESSION_SECRET='' # add here your personal session secret
+    JWT_SECRET='' # add here your JWT token secret
+    GOOGLE_CLIENT_ID='' # add here your Google Cloud Console Client ID (https://console.cloud.google.com/auth/overview)
+    GOOGLE_CLIENT_SECRET='' # add here your Google Cloud Client Secret
+    CALLBACK_URL='http://localhost:3001/auth/google/callback' # this is the callback URL after the google authentication
+    PAYPAL_CLIENT_ID='' # add here your Paypal Client ID (https://developer.paypal.com/dashboard/)
+    PAYPAL_CLIENT_SECRET='' # add here your Paypal Client Secret
+    PAYPAL_BASE_URL='https://api-m.sandbox.paypal.com' # !!make sure there's no / at the end of the link!!
+    MQTT_BROKER='mqtt://localhost:1883' # if you use a different port, change it
+    MQTT_SOCKET_BROKER='ws://localhost:9001' # if you use a different port, change it
   ```
 
 # How to Start the Project
