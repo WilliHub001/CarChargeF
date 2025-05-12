@@ -1,12 +1,4 @@
-# Lista ToDo
+# ToDo
 
-- [X] Implementazione Google Oauth
-- [X] Strutturare meglio le routes con i rispettivi servizi  
-- [X] Implementare pagamento con Paypal
-- [X] Implementare il database SQLite ed espandere le tabelle
-- [X] Implementare le pagine ejs: Admin, Profilo Utente
-- [X] Implementare controllo Lampadine Philips Hue
-- [x] Sistemare navbar
-- [X] Aggiornare il costo €/ora della sosta e €/Kw della ricarica (per admin)
-- [-] DOCUMENTAZIONE
-- [X] Testare tutti i casi
+- [ ] Implement a better calculation for the costs (kw/h)
+- [ ] Implement checks for all input boxes
