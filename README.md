@@ -1,3 +1,4 @@
+# RoboCharge
 # Project Description
 We imagine that there are mobile wireless chargers (MWbot) capable of autonomously moving under electric cars to charge them by induction. This opens up a flexible charging management system where users can leave their car parked and request it to be charged while they run errands. When the car battery reaches the percentage of charge requested by the user, the MWbot can move to charge other cars. It is assumed that the MWbot can recognize the car model to be charged and specifically the capacity in kW of the battery. In addition, each parking space is equipped with sensors to monitor occupancy. The goal of the project is the design and implementation of a management system for a smart parking lot equipped with MWbots; for simplicity, we can assume the presence of a single MWbot within the parking lot. The system users are of three types: basic users who use the parking and charging services, premium users who can additionally book in advance, and the administrator who can remotely monitor the various components of the system and the occupancy status of the parking lot.
 
@@ -93,7 +94,7 @@ At this point, it is necessary to stop and restart the service to apply the new 
  - To use Philips Hue light bulbs, simply download the following emulator: https://steveyo.github.io/Hue-Emulator/. Once the .zip file is downloaded, run the "HueEmulator-v0.8.jar" file. The port used in the project for the light bulbs is port 8000. At this point, the light bulbs will also be ready for use.
 
 ## .env file
- - In order to make the project work, the .env file needs to be added with your personal keys and secrets to access the various APIs.
+ - In order to make the project work, the .env file needs to be added with your personal keys and secrets to access the various APIs. Place it in the root directory.
    
   ```
     SESSION_SECRET='' -- add here your personal session secret
@@ -103,7 +104,7 @@ At this point, it is necessary to stop and restart the service to apply the new 
     CALLBACK_URL='http://localhost:3001/auth/google/callback' -- this is the callback URL after the google authentication
     PAYPAL_CLIENT_ID='' -- add here your Paypal Client ID (https://developer.paypal.com/dashboard/)
     PAYPAL_CLIENT_SECRET='' ## add here your Paypal Client Secret
-    PAYPAL_BASE_URL='https://api-m.sandbox.paypal.com'
+    PAYPAL_BASE_URL='https://api-m.sandbox.paypal.com' -- !!make sure there's no / at the end of the link!!
     MQTT_BROKER='mqtt://localhost:1883' -- if you use a different port, change it
     MQTT_SOCKET_BROKER='ws://localhost:9001' -- if you use a different port, change it
   ```

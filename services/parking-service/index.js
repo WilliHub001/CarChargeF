@@ -102,6 +102,18 @@ async function checkReservations(){
                 }
             }
 
+            if(reservation.idPosto != null && new Date(reservation.startTime) > new Date() && new Date(reservation.startTime) < new Date(currentTime.getTime() + (1 * 60 * 1000))){
+                if (this.entryTimer) {
+                    clearTimeout(this.entryTimer);
+                }
+
+                this.entryTimer = setTimeout(() => {
+                    client.publish('robocharge/status/entrata', JSON.stringify({
+                        entered: true
+                    }));
+                }, 45000);
+            }
+
             if(reservation.idPosto != null && new Date(reservation.startTime) < new Date() && new Date(reservation.endTime) > new Date()){
                 // Pubblica un messaggio MQTT per la nuova richiesta dello stato di ricarica
                 if (reservation.chargeRequest == 1) {
@@ -110,11 +122,6 @@ async function checkReservations(){
                         userId: reservation.idUtente,
                         spotId: reservation.idPosto,
                         targetBattery: reservation.targetBattery
-                    }));
-                }
-                if(new Date() < new Date(new Date(reservation.startTime).getTime() + 1 * 60 * 1000)){
-                    client.publish('robocharge/status/entrata', JSON.stringify({
-                        entered: true
                     }));
                 }
             }
@@ -190,7 +197,7 @@ async function setupSpots(){
 // Controllo iniziale all'avvio
 console.log('Servizio di controllo prenotazioni avviato!');
 setupSpots();
-checkReservations();
+//checkReservations();
 
 // Auth middleware
 function authMiddleware(req, res, next) {
