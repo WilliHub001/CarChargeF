@@ -76,15 +76,14 @@ The project consists of these interconnected structures:
 
  - Once mosquitto is installed, navigate to the installation path, enter the folder and open the "mosquitto.conf" file. Insert the following configuration lines at the beginning of the file:
 
- ` # Web Socket
-   listener 9001
-   protocol websockets
-   allow_anonymous true
-   #MQTT
-   listener 1883
-   protocol mqtt
-   allow_anonymous true
- `
+ ` # Web Socket `
+ `  listener 9001 `
+ `  protocol websockets `
+ `  allow_anonymous true `
+ `  #MQTT `
+ `  listener 1883 `
+ `  protocol mqtt `
+ `  allow_anonymous true `
 
 At this point, it is necessary to stop and restart the service to apply the new configurations. To do this in Windows, press the Windows key, and search for Services. At that point, a list of services running on the system will open. Find the 'Mosquitto Broker' service, right-click and stop it. Then right-click on the service again, and click on Start. Now the MQTT Broker will be correctly configured and the various clients can communicate.
 
@@ -94,17 +93,16 @@ At this point, it is necessary to stop and restart the service to apply the new 
 ## .env file
  - In order to make the project work, the .env file needs to be added with your personal keys and secrets to access the various APIs.
    
-  ` SESSION_SECRET='' -- add here your personal session secret
-    JWT_SECRET='' -- add here your JWT token secret
-    GOOGLE_CLIENT_ID='' -- add here your Google Cloud Console Client ID (https://console.cloud.google.com/auth/overview)
-    GOOGLE_CLIENT_SECRET='' -- add here your Google Cloud Client Secret
-    CALLBACK_URL='http://localhost:3001/auth/google/callback' -- this is the callback URL after the google authentication
-    PAYPAL_CLIENT_ID='' -- add here your Paypal Client ID (https://developer.paypal.com/dashboard/)
-    PAYPAL_CLIENT_SECRET='' ## add here your Paypal Client Secret
-    PAYPAL_BASE_URL='https://api-m.sandbox.paypal.com'
-    MQTT_BROKER='mqtt://localhost:1883' -- if you use a different port, change it
-    MQTT_SOCKET_BROKER='ws://localhost:9001' -- if you use a different port, change it
-  `
+  ` SESSION_SECRET='' -- add here your personal session secret `
+  `  JWT_SECRET='' -- add here your JWT token secret `
+  `  GOOGLE_CLIENT_ID='' -- add here your Google Cloud Console Client ID (https://console.cloud.google.com/auth/overview) `
+  `  GOOGLE_CLIENT_SECRET='' -- add here your Google Cloud Client Secret `
+  `  CALLBACK_URL='http://localhost:3001/auth/google/callback' -- this is the callback URL after the google authentication `
+  `  PAYPAL_CLIENT_ID='' -- add here your Paypal Client ID (https://developer.paypal.com/dashboard/) `
+  `  PAYPAL_CLIENT_SECRET='' ## add here your Paypal Client Secret `
+  `  PAYPAL_BASE_URL='https://api-m.sandbox.paypal.com' `
+  `  MQTT_BROKER='mqtt://localhost:1883' -- if you use a different port, change it `
+  `  MQTT_SOCKET_BROKER='ws://localhost:9001' -- if you use a different port, change it `
 
 # How to Start the Project
 
